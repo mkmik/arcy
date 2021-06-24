@@ -1,0 +1,34 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install minimal nightly with clippy and rustfmt
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+        components: rust-docs
+    - name: Run doc
+      run: cargo +nightly doc --no-deps -Zrustdoc-map
+    - name: Deploy rustdocto GitHub Pages
+      if: success()
+      uses: crazy-max/ghaction-github-pages@v2
+      with:
+        target_branch: gh-pages
+        build_dir: target/doc
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

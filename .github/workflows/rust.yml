@@ -20,13 +20,3 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
-    - name: Run doc
-      run: cargo +nightly doc --no-deps -Zrustdoc-map
-    - name: Deploy rustdocto GitHub Pages
-      if: success()
-      uses: crazy-max/ghaction-github-pages@v2
-      with:
-        target_branch: gh-pages
-        build_dir: target/doc
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
