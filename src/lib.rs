@@ -133,6 +133,7 @@ where
     T: AsyncDrop,
 {
     fn drop(&mut self) {
+        // see std::sync::Arc drop impl for comments about why this is safe
         if self.inner.1.fetch_sub(1, Release) != 1 {
             return;
         }
