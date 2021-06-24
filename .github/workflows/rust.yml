@@ -21,7 +21,7 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
     - name: Run doc
-      run: cargo doc
+      run: cargo +nightly doc --no-deps -Zrustdoc-map
     - name: Deploy rustdocto GitHub Pages
       if: success()
       uses: crazy-max/ghaction-github-pages@v2
