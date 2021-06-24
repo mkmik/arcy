@@ -86,7 +86,7 @@ pub struct Arcy<T>
 where
     T: AsyncDrop,
 {
-    inner: Arc<(T, AtomicUsize)>,
+    inner: Arc<ArcyInner<T>>,
     notify: Arc<Notify>,
 }
 
@@ -96,13 +96,16 @@ pub trait AsyncDrop {
     async fn async_drop(self);
 }
 
+#[derive(Debug)]
+struct ArcyInner<T>(T, AtomicUsize);
+
 impl<T> Arcy<T>
 where
     T: AsyncDrop + Send + Sync + 'static,
 {
     /// Constructs a new `Arcy<T>`.
     pub async fn new(inner: T) -> (Self, JoinHandle<()>) {
-        let inner = Arc::new((inner, AtomicUsize::new(1)));
+        let inner = Arc::new(ArcyInner(inner, AtomicUsize::new(1)));
         let notify = Arc::new(Notify::new());
         let slayer = tokio::spawn(Self::slayer(Arc::clone(&notify), Arc::clone(&inner)));
         (Self { inner, notify }, slayer)
@@ -117,11 +120,11 @@ where
         Self { inner, notify }
     }
 
-    async fn slayer(notify: Arc<Notify>, inner: Arc<(T, AtomicUsize)>) {
+    async fn slayer(notify: Arc<Notify>, inner: Arc<ArcyInner<T>>) {
         notify.notified().await;
         // we are guaranteed to be the last holder of inner
-        let (inner, _) = Arc::try_unwrap(inner).unwrap_or_else(|_| unreachable!());
-        inner.async_drop().await;
+        let inner = Arc::try_unwrap(inner).unwrap_or_else(|_| unreachable!());
+        inner.0.async_drop().await;
     }
 }
 
