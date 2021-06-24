@@ -8,10 +8,16 @@
     clippy::clone_on_ref_ptr
 )]
 
-use std::sync::Arc;
+use std::sync::{
+    atomic::{
+        self, AtomicUsize,
+        Ordering::{Acquire, Relaxed, Release},
+    },
+    Arc,
+};
 
 use async_trait::async_trait;
-use tokio::sync::{OwnedRwLockReadGuard, RwLock};
+use tokio::sync::Notify;
 use tokio::task::JoinHandle;
 
 /// Like a [`Arc`][arc] but invokes [`async_drop`][async_drop] when the last `Arcy` pointer
@@ -80,8 +86,9 @@ pub struct Arcy<T>
 where
     T: AsyncDrop,
 {
-    inner: Arc<RwLock<T>>,
-    pub read: OwnedRwLockReadGuard<T>,
+    inner: Arc<T>,
+    rc: Arc<AtomicUsize>,
+    notify: Arc<Notify>,
 }
 
 /// Called when an [`Arcy`] is destroyed.
@@ -96,27 +103,41 @@ where
 {
     /// Constructs a new `Arcy<T>`.
     pub async fn new(inner: T) -> (Self, JoinHandle<()>) {
-        let inner = Arc::new(RwLock::new(inner));
-        let read = Arc::clone(&inner).read_owned().await;
-        let slayer = tokio::spawn(Self::slayer(Arc::clone(&inner)));
-        (Self { inner, read }, slayer)
+        let inner = Arc::new(inner);
+        let rc = Arc::new(AtomicUsize::new(1));
+        let notify = Arc::new(Notify::new());
+        let slayer = tokio::spawn(Self::slayer(Arc::clone(&notify), Arc::clone(&inner)));
+        (Self { inner, rc, notify }, slayer)
     }
 
     pub async fn clone(this: &Self) -> Self {
+        // Using a relaxed ordering is alright here, see inner doc of Arc::clone
+        this.rc.fetch_add(1, Relaxed);
+
         let inner = Arc::clone(&this.inner);
-        let read = inner.read_owned().await;
-        let inner = Arc::clone(&this.inner);
-        Self { inner, read }
+        let rc = Arc::clone(&this.rc);
+        let notify = Arc::clone(&this.notify);
+        Self { inner, rc, notify }
     }
 
-    async fn slayer(inner: Arc<RwLock<T>>) {
-        let guard = inner.write().await;
-        drop(guard);
+    async fn slayer(notify: Arc<Notify>, inner: Arc<T>) {
+        notify.notified().await;
         // we are guaranteed to be the last holder of inner
-        let inner = Arc::try_unwrap(inner)
-            .unwrap_or_else(|_| unreachable!())
-            .into_inner();
+        let inner = Arc::try_unwrap(inner).unwrap_or_else(|_| unreachable!());
         inner.async_drop().await;
+    }
+}
+
+impl<T> Drop for Arcy<T>
+where
+    T: AsyncDrop,
+{
+    fn drop(&mut self) {
+        if self.rc.fetch_sub(1, Release) != 1 {
+            return;
+        }
+        atomic::fence(Acquire);
+        self.notify.notify_one();
     }
 }
 
@@ -127,6 +148,6 @@ where
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.read.deref()
+        self.inner.deref()
     }
 }
