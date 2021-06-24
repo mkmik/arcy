@@ -46,7 +46,7 @@ use tokio::task::JoinHandle;
 ///
 /// #[async_trait::async_trait]
 /// impl AsyncDrop for Foo {
-///     async fn async_drop(&mut self) {
+///     async fn async_drop(self) {
 ///         // do something asynchronously
 ///     }
 /// }
@@ -87,7 +87,7 @@ where
 /// Called when an [`Arcy`] is destroyed.
 #[async_trait]
 pub trait AsyncDrop {
-    async fn async_drop(&mut self);
+    async fn async_drop(self);
 }
 
 impl<T> Arcy<T>
@@ -110,7 +110,12 @@ where
     }
 
     async fn slayer(inner: Arc<RwLock<T>>) {
-        let mut inner = inner.write().await;
+        let guard = inner.write().await;
+        drop(guard);
+        // we are guaranteed to be the last holder of inner
+        let inner = Arc::try_unwrap(inner)
+            .unwrap_or_else(|_| unreachable!())
+            .into_inner();
         inner.async_drop().await;
     }
 }
