@@ -3,6 +3,10 @@ name = "arcy"
 version = "0.1.0"
 authors = ["Marko Mikulicic <mmikulicic@gmail.com>"]
 edition = "2018"
+description = "Arc-like smart pointer supporting async drop"
+repository = "https://github.com/mkmik/arcy"
+documentation = "https://mkmik.github.io/arcy/arcy/"
+readme = "false"
 
 [dependencies]
 tokio = { version = "^1.0", features = ["macros", "rt-multi-thread", "parking_lot", "sync", "time"] }
