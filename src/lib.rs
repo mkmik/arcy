@@ -86,8 +86,7 @@ pub struct Arcy<T>
 where
     T: AsyncDrop,
 {
-    inner: Arc<T>,
-    rc: Arc<AtomicUsize>,
+    inner: Arc<(T, AtomicUsize)>,
     notify: Arc<Notify>,
 }
 
@@ -103,27 +102,25 @@ where
 {
     /// Constructs a new `Arcy<T>`.
     pub async fn new(inner: T) -> (Self, JoinHandle<()>) {
-        let inner = Arc::new(inner);
-        let rc = Arc::new(AtomicUsize::new(1));
+        let inner = Arc::new((inner, AtomicUsize::new(1)));
         let notify = Arc::new(Notify::new());
         let slayer = tokio::spawn(Self::slayer(Arc::clone(&notify), Arc::clone(&inner)));
-        (Self { inner, rc, notify }, slayer)
+        (Self { inner, notify }, slayer)
     }
 
     pub async fn clone(this: &Self) -> Self {
         // Using a relaxed ordering is alright here, see inner doc of Arc::clone
-        this.rc.fetch_add(1, Relaxed);
+        this.inner.1.fetch_add(1, Relaxed);
 
         let inner = Arc::clone(&this.inner);
-        let rc = Arc::clone(&this.rc);
         let notify = Arc::clone(&this.notify);
-        Self { inner, rc, notify }
+        Self { inner, notify }
     }
 
-    async fn slayer(notify: Arc<Notify>, inner: Arc<T>) {
+    async fn slayer(notify: Arc<Notify>, inner: Arc<(T, AtomicUsize)>) {
         notify.notified().await;
         // we are guaranteed to be the last holder of inner
-        let inner = Arc::try_unwrap(inner).unwrap_or_else(|_| unreachable!());
+        let (inner, _) = Arc::try_unwrap(inner).unwrap_or_else(|_| unreachable!());
         inner.async_drop().await;
     }
 }
@@ -133,7 +130,7 @@ where
     T: AsyncDrop,
 {
     fn drop(&mut self) {
-        if self.rc.fetch_sub(1, Release) != 1 {
+        if self.inner.1.fetch_sub(1, Release) != 1 {
             return;
         }
         atomic::fence(Acquire);
@@ -148,6 +145,6 @@ where
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
-        self.inner.deref()
+        &self.inner.0
     }
 }
