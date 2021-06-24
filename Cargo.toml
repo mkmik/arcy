@@ -9,6 +9,6 @@ documentation = "https://mkmik.github.io/arcy/arcy/"
 readme = "false"
 
 [dependencies]
-tokio = { version = "^1.0", features = ["macros", "rt-multi-thread", "parking_lot", "sync", "time"] }
+tokio = { version = "^1.0", features = ["macros", "rt-multi-thread", "parking_lot", "sync"] }
 parking_lot = "^0.11.1"
 async-trait = "^0.1"
