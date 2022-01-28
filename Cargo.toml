@@ -6,7 +6,8 @@ edition = "2018"
 description = "Arc-like smart pointer supporting async drop"
 repository = "https://github.com/mkmik/arcy"
 documentation = "https://mkmik.github.io/arcy/arcy/"
-readme = "false"
+readme = "README.md"
+license = "BSD-2-Clause"
 
 [dependencies]
 tokio = { version = "^1.16", features = ["macros", "rt-multi-thread", "parking_lot", "sync"] }
