@@ -11,5 +11,5 @@ license = "BSD-2-Clause"
 
 [dependencies]
 tokio = { version = "^1.16", features = ["macros", "rt-multi-thread", "parking_lot", "sync"] }
-parking_lot = "^0.11.2"
+parking_lot = "^0.12.0"
 async-trait = "^0.1"
