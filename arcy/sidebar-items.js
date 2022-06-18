@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Arcy","Like a `Arc` but invokes `async_drop` when the last `Arcy` pointer is destroyed."]],"trait":[["AsyncDrop","Called when an [`Arcy`] is destroyed."]]});

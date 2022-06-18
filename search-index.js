@@ -1,0 +1,5 @@
+var searchIndex = JSON.parse('{\
+"arcy":{"doc":"","t":[3,8,10,11,11,11,11,11,11,11,11,11,11,11,11],"n":["Arcy","AsyncDrop","async_drop","borrow","borrow_mut","clone","deref","drop","fmt","from","into","new","try_from","try_into","type_id"],"q":["arcy","","","","","","","","","","","","","",""],"d":["Like a <code>Arc</code> but invokes <code>async_drop</code> when the last <code>Arcy</code> …","Called when an <code>Arcy</code> is destroyed.","","","","","","","","Returns the argument unchanged.","Calls <code>U::from(self)</code>.","Constructs a new <code>Arcy&lt;T&gt;</code>.","","",""],"i":[0,0,1,2,2,2,2,2,2,2,2,2,2,2,2],"f":[null,null,[[],["pin",3,[["box",3,[["future",8]]]]]],[[["",0]],["",0]],[[["",0]],["",0]],[[["arcy",3]],["future",8]],[[["arcy",3]]],[[["arcy",3]]],[[["arcy",3,[["debug",8]]],["formatter",3]],["result",6]],[[]],[[]],[[],["future",8]],[[],["result",4]],[[],["result",4]],[[["",0]],["typeid",3]]],"p":[[8,"AsyncDrop"],[3,"Arcy"]]}\
+}');
+if (typeof window !== 'undefined' && window.initSearch) {window.initSearch(searchIndex)};
+if (typeof exports !== 'undefined') {exports.searchIndex = searchIndex};
