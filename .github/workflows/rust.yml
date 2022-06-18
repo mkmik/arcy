@@ -35,7 +35,7 @@ jobs:
       run: cargo +nightly doc --no-deps -Zrustdoc-map
     - name: Deploy rustdocto GitHub Pages
       if: success()
-      uses: crazy-max/ghaction-github-pages@v2
+      uses: crazy-max/ghaction-github-pages@v3
       with:
         target_branch: gh-pages
         build_dir: target/doc
