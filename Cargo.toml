@@ -10,6 +10,6 @@ readme = "README.md"
 license = "BSD-2-Clause"
 
 [dependencies]
-tokio = { version = "^1.17", features = ["macros", "rt-multi-thread", "parking_lot", "sync"] }
+tokio = { version = "^1.18", features = ["macros", "rt-multi-thread", "parking_lot", "sync"] }
 parking_lot = "^0.12.1"
 async-trait = "^0.1"
