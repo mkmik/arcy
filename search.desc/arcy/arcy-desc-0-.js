@@ -1,0 +1,1 @@
+searchState.loadedDescShard("arcy", 0, "Like a <code>Arc</code> but invokes <code>async_drop</code> when the last <code>Arcy</code> …\nCalled when an <code>Arcy</code> is destroyed.\nReturns the argument unchanged.\nCalls <code>U::from(self)</code>.\nConstructs a new <code>Arcy&lt;T&gt;</code>.")
