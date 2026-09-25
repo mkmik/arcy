@@ -1,0 +1,1 @@
+rd_("BlConstructs a new <code>Arcy&lt;T&gt;</code>.EoLike a <code>Arc</code> but invokes <code>async_drop</code> when the last <code>Arcy</code> \xe2\x80\xa6AoReturns the argument unchanged.BaCalls <code>U::from(self)</code>.BnCalled when an <code>Arcy</code> is destroyed.")
